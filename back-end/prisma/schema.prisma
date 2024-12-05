@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  birthDate DateTime @db.Date
+  gender    Gender
+  city      String
+  address   String?
+  role      Role     @default(FAN)
+  isVerified Boolean  @default(false)
+
+  reservations Reservation[] @relation("userReservations")
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  matchDate DateTime
+  homeScore Int? // assume when the match is created, the score isn't known yet
+  awayScore Int? // assume when the match is created, the score isn't known yet
+
+  homeTeamId Int
+  homeTeam   Team @relation("homeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId Int
+  awayTeam   Team @relation("awayTeam", fields: [awayTeamId], references: [id])
+
+  mainRefereeId Int
+  mainReferee   Referee @relation("mainRefereeMatches", fields: [mainRefereeId], references: [id])
+  linesMan1Id   Int
+  linesMan1     Referee @relation("linesMan1Matches", fields: [linesMan1Id], references: [id])
+  linesMan2Id   Int
+  linesMan2     Referee @relation("linesMan2Matches", fields: [linesMan2Id], references: [id])
+
+  stadiumId Int
+  stadium   Stadium @relation("stadiumMatches", fields: [stadiumId], references: [id])
+
+  reservations Reservation[] @relation("matchReservations")
+}
+
+model Team {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  homeMatches Match[] @relation("homeTeam")
+  awayMatches Match[] @relation("awayTeam")
+}
+
+model Referee {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  mainMatches  Match[] @relation("mainRefereeMatches")
+  line1Matches Match[] @relation("linesMan1Matches")
+  line2Matches Match[] @relation("linesMan2Matches")
+}
+
+model Stadium {
+  id          Int    @id @default(autoincrement())
+  name        String
+  rows        Int
+  seatsPerRow Int
+
+  matches Match[] @relation("stadiumMatches")
+  seates  Seat[]  @relation("stadiumSeats")
+}
+
+model Seat {
+  id         Int @id @default(autoincrement())
+  row        Int
+  seatNumber Int
+
+  stadiumId Int
+  stadium   Stadium @relation("stadiumSeats", fields: [stadiumId], references: [id])
+
+  reservations Reservation[] @relation("seatReservations")
+}
+
+model Reservation {
+  id         Int               @id @default(autoincrement())
+  status     ReservationStatus @default(ACTIVE)
+  reservedAt DateTime
+  canceledAt DateTime? // null if the reservation is active, otherwise the date it was cancelled or expired
+
+  matchId Int
+  match   Match @relation("matchReservations", fields: [matchId], references: [id])
+
+  seatId Int
+  seat   Seat @relation("seatReservations", fields: [seatId], references: [id])
+
+  userId String
+  user   User   @relation("userReservations", fields: [userId], references: [id])
+
+  @@unique([matchId, seatId, canceledAt]) // ensure that a seat can be reserved only once for a match
+}
+
+enum Role {
+  FAN
+  MANAGER
+  ADMIN
+}
+
+enum Gender {
+  MALE   @map("M")
+  FEMALE @map("F")
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
