@@ -1,19 +1,11 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
-require('dotenv').config();
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const prisma = new PrismaClient();
 
 exports.registerUser = async (body) => {
-    switch (body.gender) {
-        case "M":
-            body.gender = "MALE";
-            break;
-        case "F":
-            body.gender = "FEMALE";
-            break;
-    }
-
     const hashedPassword = await bcrypt.hash(body.password, 10);
     body.password = hashedPassword;
 
@@ -25,16 +17,55 @@ exports.registerUser = async (body) => {
                 username: true,
                 firstName: true,
                 lastName: true,
-                email: true
-            }
+                email: true,
+            },
         });
         return { statusCode: 201, data: user };
     } catch (err) {
-        if (process.env._ENV === 'dev') {
+        if (process.env._ENV === "dev") {
             throw err;
         }
         if (err.code === "P2002") {
-            return { statusCode: 404, message: "User exists or a constraint is violated" };
+            return {
+                statusCode: 404,
+                message: "User exists or a constraint is violated",
+            };
         }
     }
+};
+
+exports.loginUser = async (body) => {
+    const user = await prisma.user.findFirst({
+        where: {
+            username: body.username,
+        },
+        select: {
+            id: true,
+            username: true,
+            password: true,
+            role: true,
+            isVerified: true,
+        },
+    });
+
+    if (!user) {
+        return { statusCode: 404, message: "User not found" };
+    }
+
+    if (user.isVerified === false) {
+        return { statusCode: 403, message: "User is not verified" };
+    }
+
+    const match = await bcrypt.compare(body.password, user.password);
+
+    if (!match) {
+        return { statusCode: 401, message: "Invalid credentials" };
+    }
+    token = exports.generateToken({ userId: user.id, role: user.role });
+    return { statusCode: 200, data: { token } };
+};
+
+exports.generateToken = (user) => {
+    const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
+    return token;
 };

@@ -20,13 +20,42 @@ exports.getUnapprovedUsers = async () => {
 };
 
 exports.approveUser = async (userId) => {
-    const user = await prisma.user.update({
+    const user = await prisma.user.findFirst({
         where: {
-            id: userId
+            id: userId,
+        },
+        select:{
+            id: true,
+            isVerified: true
+        }
+    });
+
+    if(!user){
+        return {statusCode: 404, message: "User not found"};
+    }
+
+    if(user.isVerified){
+        return {statusCode: 400, message: "User is already verified"};
+    }
+
+    await prisma.user.update({
+        where: {
+            id: userId,
+            isVerified: false
         },
         data: {
             isVerified: true
-        }, 
+        }
+    });
+    
+    return {statusCode: 204};
+}
+
+exports.deleteUser = async (userId) => {
+    const user = await prisma.user.delete({
+        where: {
+            id: userId
+        },
         select: {
             id: true
         }
@@ -34,5 +63,5 @@ exports.approveUser = async (userId) => {
     if (!user) {
         return {statusCode: 404, message: "User not found"};
     }
-    return {statusCode: 204};
+    return {statusCode: 200, message: "User deleted successfully"};
 }
