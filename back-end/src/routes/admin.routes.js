@@ -1,10 +1,16 @@
 const express = require('express');
 const adminController = require('../controllers/admin.controller');
+const authMiddleware = require('../middleware/authMiddleware');
+const roleMiddleware = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
-router.get('/unapproved-users', adminController.getUnapprovedUsers);
+const role = "ADMIN";
 
-router.put('/approve-user', adminController.approveUser);
+router.get('/unapproved-users', authMiddleware, roleMiddleware(role), adminController.getUnapprovedUsers);
+
+router.put('/approve-user', authMiddleware, roleMiddleware(role), adminController.approveUser);
+
+router.delete('/delete-user',authMiddleware, roleMiddleware(role), adminController.deleteUser);
 
 module.exports = router;
