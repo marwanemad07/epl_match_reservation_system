@@ -10,12 +10,17 @@ import SignupForm from "./SignupForm";
 import LoginForm from "./LoginForm";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { useEffect } from "react";
 
 /**
  * RegisterPage renders the background and the signup & login tabs
  */
 function RegisterPage() {
   const { isLogin } = useParams();
+
+  useEffect(() => {
+    document.title = "Tickestria - Registration";
+  }, []);
 
   return (
     <main className="h-screen w-screen bg-[url('/registerBg.jpeg')] bg-cover grid grid-cols-12">

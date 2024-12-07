@@ -1,5 +1,11 @@
+import { useEffect } from "react";
+
 function LandingPage() {
-  return <div>LandingPage</div>;
+  useEffect(() => {
+    document.title = "Tickestria";
+  }, []);
+
+  return <main>LandingPage</main>;
 }
 
 export default LandingPage;
