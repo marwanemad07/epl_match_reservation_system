@@ -11,12 +11,15 @@ import LoginForm from "./LoginForm";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 
+/**
+ * RegisterPage renders the background and the signup & login tabs
+ */
 function RegisterPage() {
   const { isLogin } = useParams();
 
   return (
-    <main className="h-screen w-screen bg-[url('/registerBg.jpeg')] bg-cover grid grid-cols-10 grid-rows-10">
-      <Card className="w-[32rem] col-start-2 row-start-2 row-end-10 p-5">
+    <main className="h-screen w-screen bg-[url('/registerBg.jpeg')] bg-cover grid grid-cols-12">
+      <Card className="w-[32rem] col-start-2 p-5 h-fit mt-56">
         <Tabs defaultValue={isLogin ? "login" : "signup"}>
           {/* TABS */}
           <TabsList className="w-full grid grid-cols-2 gap-3">
