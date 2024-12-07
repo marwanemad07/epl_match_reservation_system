@@ -8,7 +8,7 @@ import { HomeLayout, LandingPage, ErrorPage, RegisterPage } from "./pages";
 
 // Loaders
 import { homeDataLoader } from "./pages/loaders";
-import { TooltipProvider } from "./components/ui/tooltip";
+import { TooltipProvider } from "./components/shadcn/tooltip";
 
 // Tanstack Query configuration
 const queryClient = new QueryClient({
