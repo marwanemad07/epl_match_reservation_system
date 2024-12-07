@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE `user` ADD COLUMN `isVerified` BOOLEAN NOT NULL DEFAULT false,
-    MODIFY `role` ENUM('FAN', 'MANAGER', 'ADMIN') NOT NULL DEFAULT 'FAN';

@@ -10,7 +10,8 @@ CREATE TABLE `User` (
     `gender` ENUM('M', 'F') NOT NULL,
     `city` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NULL,
-    `role` ENUM('FAN', 'MANAGER') NOT NULL DEFAULT 'FAN',
+    `role` ENUM('FAN', 'MANAGER', 'ADMIN') NOT NULL DEFAULT 'FAN',
+    `isVerified` BOOLEAN NOT NULL DEFAULT false,
 
     UNIQUE INDEX `User_username_key`(`username`),
     UNIQUE INDEX `User_email_key`(`email`),

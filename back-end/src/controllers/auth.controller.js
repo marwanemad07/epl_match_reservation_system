@@ -7,6 +7,9 @@ exports.registerUser = async (req, res) => {
     try {
         const data = req.body;
         const response = await authService.registerUser(data);
+        // if (response.statusCode === 201) {
+        //     authService.addTokenToCookie(res, response.data.token);
+        // }
         const statusCode = response.statusCode || 201;
         res.status(statusCode).json(response);
     }
@@ -21,6 +24,9 @@ exports.loginUser = async (req, res) => {
     try {
         const data = req.body;
         const response = await authService.loginUser(data);
+        if (response.statusCode === 200) {
+            authService.addTokenToCookie(res, response.data.token);
+        }
         const statusCode = response.statusCode || 200;
         res.status(statusCode).json(response);
     }

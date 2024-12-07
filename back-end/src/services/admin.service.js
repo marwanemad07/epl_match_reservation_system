@@ -1,67 +1,65 @@
-const { PrismaClient } = require("@prisma/client");
-require('dotenv').config();
-
-const prisma = new PrismaClient();
+const { Prisma: prisma } = require("../../lib/db");
+require("dotenv").config();
 
 exports.getUnapprovedUsers = async () => {
-    const users = await prisma.user.findMany({
-        where: {
-            isVerified: false
-        },
-        select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-        }
-    });
-    return {statusCode: 200, data: users};
+  const users = await prisma.user.findMany({
+    where: {
+      isVerified: false,
+    },
+    select: {
+      id: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
+  });
+  return { statusCode: 200, data: users };
 };
 
 exports.approveUser = async (userId) => {
-    const user = await prisma.user.findFirst({
-        where: {
-            id: userId,
-        },
-        select:{
-            id: true,
-            isVerified: true
-        }
-    });
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      isVerified: true,
+    },
+  });
 
-    if(!user){
-        return {statusCode: 404, message: "User not found"};
-    }
+  if (!user) {
+    return { statusCode: 404, message: "User not found" };
+  }
 
-    if(user.isVerified){
-        return {statusCode: 400, message: "User is already verified"};
-    }
+  if (user.isVerified) {
+    return { statusCode: 400, message: "User is already verified" };
+  }
 
-    await prisma.user.update({
-        where: {
-            id: userId,
-            isVerified: false
-        },
-        data: {
-            isVerified: true
-        }
-    });
-    
-    return {statusCode: 204};
-}
+  await prisma.user.update({
+    where: {
+      id: userId,
+      isVerified: false,
+    },
+    data: {
+      isVerified: true,
+    },
+  });
+
+  return { statusCode: 204 };
+};
 
 exports.deleteUser = async (userId) => {
-    const user = await prisma.user.delete({
-        where: {
-            id: userId
-        },
-        select: {
-            id: true
-        }
-    });
-    if (!user) {
-        return {statusCode: 404, message: "User not found"};
-    }
-    return {statusCode: 200, message: "User deleted successfully"};
-}
+  const user = await prisma.user.delete({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+  if (!user) {
+    return { statusCode: 404, message: "User not found" };
+  }
+  return { statusCode: 200, message: "User deleted successfully" };
+};

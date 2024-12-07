@@ -1,10 +1,13 @@
 const express = require("express");
 require("dotenv").config();
+const cookieParser = require('cookie-parser')
 const bodyParser = require("body-parser");
 const authRouter = require("./routes/auth.routes");
 const adminRouter = require("./routes/admin.routes");
 
 const app = express();
+
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 
@@ -30,4 +33,6 @@ app.use((req, res, next) => {
     res.status(404).json({ statusCode: 404, message: "Page not found" });
 });
 
-app.listen(process.env.PORT);
+app.listen(process.env.PORT, () => {
+    console.log(`Server is running on port ${process.env.PORT}`);
+});

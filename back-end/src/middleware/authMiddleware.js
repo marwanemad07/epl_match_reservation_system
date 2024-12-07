@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateMiddleware = (req, res, next) => {
-    const authHeader  = req.headers.authorization;
+    // extract token from cookies
+    const authHeader = req.cookies.token || req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ statusCode: 401, message: "Unauthorized: No token provided" });
     }
