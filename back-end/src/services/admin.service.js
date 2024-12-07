@@ -28,6 +28,8 @@ exports.approveUser = async (userId) => {
     },
   });
 
+  console.log(user)
+
   if (!user) {
     return { statusCode: 404, message: "User not found" };
   }
@@ -46,7 +48,7 @@ exports.approveUser = async (userId) => {
     },
   });
 
-  return { statusCode: 204 };
+  return { statusCode: 202, message: "User approved successfully" };
 };
 
 exports.deleteUser = async (userId) => {

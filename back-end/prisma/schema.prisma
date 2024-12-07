@@ -28,6 +28,8 @@ model User {
   isVerified Boolean  @default(false)
 
   reservations Reservation[] @relation("userReservations")
+
+  sessions ReservationSession[]
 }
 
 model Match {
@@ -94,7 +96,7 @@ model Seat {
 
 model Reservation {
   id         Int               @id @default(autoincrement())
-  status     ReservationStatus @default(ACTIVE)
+  status     ReservationStatus @default(TEMP_BOOKED)
   reservedAt DateTime
   canceledAt DateTime? // null if the reservation is active, otherwise the date it was cancelled or expired
 
@@ -107,7 +109,21 @@ model Reservation {
   userId String
   user   User   @relation("userReservations", fields: [userId], references: [id])
 
-  @@unique([matchId, seatId, canceledAt]) // ensure that a seat can be reserved only once for a match
+  session ReservationSession @relation(fields: [sessionId], references: [id])
+  sessionId Int
+
+  @@unique([matchId, seatId, sessionId])
+}
+
+model ReservationSession {
+  id        Int      @id @default(autoincrement())
+  expiresAt DateTime
+  expired   Boolean  @default(false)
+
+  user      User @relation(fields: [userId], references: [id])
+  userId    String
+
+  reservations Reservation[]
 }
 
 enum Role {
@@ -122,7 +138,8 @@ enum Gender {
 }
 
 enum ReservationStatus {
-  ACTIVE
-  CANCELLED
+  CONFIRMED
+  TEMP_BOOKED
   EXPIRED
+  CANCELLED
 }
