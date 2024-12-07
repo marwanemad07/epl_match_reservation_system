@@ -8,4 +8,9 @@ router.get(
   publicController.getAllMatches
 );
 
+router.get(
+  "/get-match/:id",
+  publicController.getMatchDetails
+);
+
 module.exports = router;
