@@ -28,4 +28,11 @@ router.delete(
   adminController.deleteUser
 );
 
+router.post(
+  "/seed-teams",
+  authMiddleware,
+  roleMiddleware(role),
+  adminController.seedTeams
+);
+
 module.exports = router;

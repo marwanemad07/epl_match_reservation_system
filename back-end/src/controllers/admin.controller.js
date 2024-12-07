@@ -1,4 +1,5 @@
 const adminService = require("../services/admin.service");
+const seed = require("../../prisma/seed");
 
 const development = process.env._ENV == "dev";
 
@@ -41,6 +42,18 @@ exports.deleteUser = async (req, res) => {
 
     const response = await adminService.deleteUser(userId);
     const statusCode = response.statusCode || 200;
+    res.status(statusCode).json(response);
+  } catch (err) {
+    const message = development ? err.message : "Internal server error";
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({ message: message });
+  }
+};
+
+exports.seedTeams = async (req, res) => {
+  try {
+    const response = await seed.seedTeams();
+    const statusCode = response.statusCode || 201;
     res.status(statusCode).json(response);
   } catch (err) {
     const message = development ? err.message : "Internal server error";
