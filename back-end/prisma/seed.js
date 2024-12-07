@@ -11,29 +11,9 @@ exports.seedDatabase = async () => {
   try {
     await deleteAll();
 
-    const teams = [
-      "Al Ahly",
-      "Zamalek",
-      "Pyramids FC",
-      "Ismaily SC",
-      "Al Ittihad Alexandria",
-      "ENPPI",
-      "Future FC",
-      "Ghazl El Mahalla",
-      "El Gaish",
-      "Smouha SC",
-      "Al Mokawloon Al Arab",
-      "Misr Lel Makkasa",
-      "El Entag El Harby",
-      "El Gouna",
-      "Pharco FC",
-      "National Bank of Egypt SC",
-      "Ceramica Cleopatra",
-      "Eastern Company SC",
-    ];
-    await prisma.team.createMany({
-      data: teams.map((name) => ({ name })),
-    });
+    await seedTeams();
+
+    await seedReferees();
 
     const stadiums = [
       { name: "Cairo International Stadium", rows: 100, seatsPerRow: 50 },
@@ -41,15 +21,6 @@ exports.seedDatabase = async () => {
       { name: "Al Salam Stadium", rows: 60, seatsPerRow: 30 },
     ];
     await prisma.stadium.createMany({ data: stadiums });
-
-    const referees = [
-      { name: "Gehad Grisha" },
-      { name: "Mahmoud El Banna" },
-      { name: "Ibrahim Nour El Din" },
-      { name: "Amr El Hanafi" },
-      { name: "Ahmed Gamal" },
-    ];
-    await prisma.referee.createMany({ data: referees });
 
     await seedAdmin();
 
@@ -119,6 +90,24 @@ exports.seedTeams = async () => {
     console.log("Teams seeded successfully.");
 
     return { statusCode: 201, message: "Teams seeded successfully" };
+  } catch (error) {
+    console.error("Error seeding teams:", error);
+    return { statusCode: 500, message: "Internal server error" };
+  }
+};
+
+exports.seedReferees = async () => {
+  try {
+    const referees = [
+      { name: "Gehad Grisha" },
+      { name: "Mahmoud El Banna" },
+      { name: "Ibrahim Nour El Din" },
+      { name: "Amr El Hanafi" },
+      { name: "Ahmed Gamal" },
+      { name: "Tahseen Abo Elmahasen" },
+    ];
+    await prisma.referee.createMany({ data: referees });
+    return { statusCode: 201, message: "Referees seeded successfully" };
   } catch (error) {
     console.error("Error seeding teams:", error);
     return { statusCode: 500, message: "Internal server error" };

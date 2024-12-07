@@ -2,7 +2,7 @@ const express = require("express");
 const managerController = require("../controllers/manager.controller");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
-const { createStadiumValidation } = require("../validators/manager.validator");
+const { createStadiumValidation, createMatchValidation } = require("../validators/manager.validator");
 const handleValidationErrors = require("../middleware/validationMiddleware");
 
 const router = express.Router();
@@ -16,6 +16,15 @@ router.post(
   createStadiumValidation,
   handleValidationErrors,
   managerController.createStadium
+);
+
+router.post(
+  "/create-match",
+  authMiddleware,
+  roleMiddleware(role),
+  createMatchValidation,
+  handleValidationErrors,
+  managerController.createMatch
 );
 
 module.exports = router;

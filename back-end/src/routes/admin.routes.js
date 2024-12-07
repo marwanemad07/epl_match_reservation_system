@@ -35,4 +35,11 @@ router.post(
   adminController.seedTeams
 );
 
+router.post(
+  "/seed-referees",
+  authMiddleware,
+  roleMiddleware(role),
+  adminController.seedReferees
+);
+
 module.exports = router;

@@ -61,3 +61,15 @@ exports.seedTeams = async (req, res) => {
     res.status(statusCode).json({ message: message });
   }
 };
+
+exports.seedReferees = async (req, res) => {
+  try {
+    const response = await seed.seedReferees();
+    const statusCode = response.statusCode || 201;
+    res.status(statusCode).json(response);
+  } catch (err) {
+    const message = development ? err.message : "Internal server error";
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({ message: message });
+  }
+};
