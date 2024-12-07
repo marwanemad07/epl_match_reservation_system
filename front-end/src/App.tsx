@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 
 // Pages
-import { HomeLayout, LandingPage, ErrorPage } from "./pages";
+import { HomeLayout, LandingPage, ErrorPage, RegisterPage } from "./pages";
 
 // Loaders
 import { homeDataLoader } from "./pages/loaders";
@@ -27,10 +27,10 @@ const router = createBrowserRouter([
         loader: homeDataLoader(queryClient),
       },
       // { path: "", element: <LandingPage /> },
-      // { path: "", element: <LandingPage /> },
     ],
     errorElement: <ErrorPage />,
   },
+  { path: "/register", element: <RegisterPage /> },
 ]);
 
 export default function App() {
