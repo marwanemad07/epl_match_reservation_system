@@ -4,7 +4,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 
 // Pages
-import { HomeLayout, LandingPage, ErrorPage, RegisterPage } from "./pages";
+import {
+  HomeLayout,
+  LandingPage,
+  RegisterPage,
+  TeamPage,
+  MatchPage,
+  ProfilePage,
+  BookingPage,
+  ErrorPage,
+} from "./pages";
 
 // Loaders
 import { homeDataLoader } from "./pages/loaders";
@@ -26,7 +35,10 @@ const router = createBrowserRouter([
         element: <LandingPage />,
         loader: homeDataLoader(queryClient),
       },
-      // { path: "", element: <LandingPage /> },
+      { path: "profile/:userId", element: <ProfilePage /> },
+      { path: "match/:matchId/booking", element: <BookingPage /> },
+      { path: "match/:matchId", element: <MatchPage /> },
+      { path: "team/:teamId", element: <TeamPage /> },
     ],
     errorElement: <ErrorPage />,
   },
