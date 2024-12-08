@@ -5,15 +5,41 @@ import LabelInputContainer from "@/components/LabelInputContainer";
 import { Label } from "@/components/shadcn/label";
 import { LoginSchema, LoginValues } from "@/types/LoginSchema";
 import { Button } from "@/components/shadcn/button";
+import { useMutation } from "@tanstack/react-query";
+import { loginUser } from "@/lib/requests/UserRequests";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
+/**
+ * LoginForm renders the login tab.
+ * Has the functionality to send the login request.
+ */
 function LoginForm() {
   const {
     handleSubmit,
     register,
     formState: { errors },
+    getValues,
   } = useForm<LoginValues>({ resolver: zodResolver(LoginSchema) });
 
-  const onSubmit: SubmitHandler<LoginValues> = (data) => console.log(data);
+  const navigate = useNavigate();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: loginUser,
+    onSuccess: () => {
+      toast.success(`Welcome back, ${getValues("username")}`);
+      navigate("/");
+      // TODO: may save user to the local storage and zustand store
+    },
+    onError: (error) => {
+      const axiosError = error as any;
+      toast.error(`Error logging user: ${axiosError?.response?.data.message}`);
+    },
+  });
+
+  const onSubmit: SubmitHandler<LoginValues> = (data) => {
+    mutate(data);
+  };
 
   return (
     <form
@@ -49,8 +75,13 @@ function LoginForm() {
         />
       </LabelInputContainer>
       <div className="col-span-2 mt-5 flex justify-end px-5">
-        <Button type="submit" className="px-10 text-md" variant="outline">
-          Login
+        <Button
+          type="submit"
+          className="px-10 text-md"
+          variant={isPending ? "ghost" : "outline"}
+          disabled={isPending}
+        >
+          {isPending ? "Loading" : "Login"}
         </Button>
       </div>
     </form>

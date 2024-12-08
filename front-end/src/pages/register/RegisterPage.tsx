@@ -24,7 +24,7 @@ function RegisterPage() {
 
   return (
     <main className="h-screen w-screen bg-[url('/registerBg.jpeg')] bg-cover grid grid-cols-12">
-      <Card className="w-[32rem] col-start-2 p-5 h-fit mt-56">
+      <Card className="relative top-1/2 -translate-y-1/2 w-[32rem] col-start-2 p-5 h-fit">
         <Tabs defaultValue={isLogin ? "login" : "signup"}>
           {/* TABS */}
           <TabsList className="w-full grid grid-cols-2 gap-3">

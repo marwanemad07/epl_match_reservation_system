@@ -24,6 +24,7 @@ type SignupStep2Props = {
     React.SetStateAction<Partial<SignupValues> | undefined>
   >;
   signupUser: (data: SignupStep2Values) => void;
+  isPending: boolean;
 };
 
 /**
@@ -33,12 +34,14 @@ type SignupStep2Props = {
  *              - **setData:** sets the data of signup for the parent component
  *              - **prevStep:** navigates back to the first step in signup
  *              - **signupUser:** creates a new user with userMutation
+ *              - **isPending:** checks if the signup request is pending
  */
 function SignupStep2({
   signup2Data,
   setData,
   prevStep,
   signupUser,
+  isPending,
 }: SignupStep2Props) {
   const {
     handleSubmit,
@@ -64,25 +67,18 @@ function SignupStep2({
 
   const roleComponents = [
     <FormControlLabel
-      value="customer"
+      value="FAN"
       control={<Radio sx={MUI_RADIO_STYLE} />}
-      label="Customer"
+      label="Fan"
       sx={MUI_LABEL_STYLE}
       key={1}
     />,
     <FormControlLabel
-      value="admin"
+      value="MANAGER"
       control={<Radio sx={MUI_RADIO_STYLE} />}
-      label="Admin"
+      label="Manager"
       sx={MUI_LABEL_STYLE}
       key={2}
-    />,
-    <FormControlLabel
-      value="EFA"
-      control={<Radio sx={MUI_RADIO_STYLE} />}
-      label="EFA"
-      sx={MUI_LABEL_STYLE}
-      key={3}
     />,
   ];
 
@@ -123,7 +119,7 @@ function SignupStep2({
           Password
         </Label>
         <Input
-          placeholder="example@mail.com"
+          placeholder="Please enter your password"
           id="password"
           type="password"
           {...register("password")}
@@ -161,8 +157,13 @@ function SignupStep2({
         >
           Back
         </Button>
-        <Button type="submit" className="px-10 text-md" variant="outline">
-          Signup
+        <Button
+          type="submit"
+          className="px-10 text-md"
+          variant={isPending ? "ghost" : "outline"}
+          disabled={isPending}
+        >
+          {isPending ? "Loading" : "Signup"}
         </Button>
       </div>
     </form>

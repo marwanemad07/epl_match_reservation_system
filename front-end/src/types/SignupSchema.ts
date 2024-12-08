@@ -37,10 +37,9 @@ const SignupStep2Schema = z.object({
   password: PasswordSchema,
   username: UsernameSchema,
   role: z.union([
-    z.literal("admin", { required_error: "Required" }),
-    z.literal("EFA"),
-    z.literal("customer"),
-  ]), //
+    z.literal("FAN", { required_error: "Required" }),
+    z.literal("MANAGER"),
+  ]),
 });
 
 // Export the schema for use for form validation
