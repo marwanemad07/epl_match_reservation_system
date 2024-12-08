@@ -73,14 +73,27 @@ CREATE TABLE `Seat` (
 -- CreateTable
 CREATE TABLE `Reservation` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `status` ENUM('ACTIVE', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'ACTIVE',
+    `status` ENUM('CONFIRMED', 'TEMP_BOOKED') NOT NULL DEFAULT 'TEMP_BOOKED',
     `reservedAt` DATETIME(3) NOT NULL,
     `canceledAt` DATETIME(3) NULL,
     `matchId` INTEGER NOT NULL,
     `seatId` INTEGER NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
+    `sessionId` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `Reservation_matchId_seatId_canceledAt_key`(`matchId`, `seatId`, `canceledAt`),
+    UNIQUE INDEX `Reservation_matchId_seatId_sessionId_key`(`matchId`, `seatId`, `sessionId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ReservationSession` (
+    `id` VARCHAR(191) NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `isActive` BOOLEAN NOT NULL DEFAULT true,
+    `userId` VARCHAR(191) NOT NULL,
+    `matchId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -113,3 +126,12 @@ ALTER TABLE `Reservation` ADD CONSTRAINT `Reservation_seatId_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `Reservation` ADD CONSTRAINT `Reservation_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Reservation` ADD CONSTRAINT `Reservation_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `ReservationSession`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ReservationSession` ADD CONSTRAINT `ReservationSession_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ReservationSession` ADD CONSTRAINT `ReservationSession_matchId_fkey` FOREIGN KEY (`matchId`) REFERENCES `Match`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
