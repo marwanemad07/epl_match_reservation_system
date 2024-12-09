@@ -5,7 +5,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/shadcn/tabs";
-import { useParams } from "react-router-dom";
+import { useNavigation } from "react-router-dom";
 import SignupForm from "./SignupForm";
 import LoginForm from "./LoginForm";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -16,7 +16,8 @@ import { useEffect } from "react";
  * RegisterPage renders the background and the signup & login tabs
  */
 function RegisterPage() {
-  const { isLogin } = useParams();
+  const navigation = useNavigation();
+  const isLogin = navigation.state;
 
   useEffect(() => {
     document.title = "Tickestria - Registration";

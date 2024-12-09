@@ -38,7 +38,11 @@ const router = createBrowserRouter([
         element: <LandingPage />,
         loader: homeDataLoader(queryClient),
       },
-      { path: "profile/:userId", element: <ProfilePage /> },
+      {
+        // PROFILE PAGE
+        path: "profile",
+        element: <ProfilePage />,
+      },
       { path: "match/:matchId/booking", element: <BookingPage /> },
       { path: "matches", element: <MatchPage /> },
       { path: "match/:matchId", element: <MatchPage /> },

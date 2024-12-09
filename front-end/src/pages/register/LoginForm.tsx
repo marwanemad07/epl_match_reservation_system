@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "@/lib/requests/UserRequests";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useUserStore } from "@/stores/userStore";
 
 /**
  * LoginForm renders the login tab.
@@ -22,14 +23,17 @@ function LoginForm() {
     getValues,
   } = useForm<LoginValues>({ resolver: zodResolver(LoginSchema) });
 
+  const setUsername = useUserStore((state) => state.setUsername);
+
   const navigate = useNavigate();
 
   const { mutate, isPending } = useMutation({
     mutationFn: loginUser,
     onSuccess: () => {
-      toast.success(`Welcome back, ${getValues("username")}`);
+      const username = getValues("username");
+      setUsername(username);
+      toast.success(`Welcome back, ${username}`);
       navigate("/");
-      // TODO: may save user to the local storage and zustand store
     },
     onError: (error) => {
       const axiosError = error as any;

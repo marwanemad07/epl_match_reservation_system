@@ -9,19 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./shadcn/dropdown-menu";
-import { toast } from "react-toastify";
+import { useUserStore } from "@/stores/userStore";
+import { logout } from "@/lib/utils";
 
 function Navbar() {
-  const user = {
-    id: 5,
-  };
+  const username = useUserStore((state) => state.username);
 
-  // TODO: search functionality, login navigation (state), logout functionality
-
-  const handleLogout = () => {
-    console.log("logout");
-    toast.success("Logged out successfully");
-  };
+  // TODO: search functionality
 
   return (
     <section className="w-screen sticky flex justify-between items-center py-4 px-24 border-b shadow-md bg-opacity-60 backdrop-blur-xl">
@@ -64,18 +58,18 @@ function Navbar() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={10}>
-            {user ? (
+            {username ? (
               <>
+                <DropdownMenuItem className="focus:bg-transparent">
+                  Hey, {username}
+                </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Link className="w-full" to={`/profile/${user.id}`}>
+                  <Link className="w-full" to="/profile">
                     Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleLogout}
-                >
+                <DropdownMenuItem className="cursor-pointer" onClick={logout}>
                   Logout
                 </DropdownMenuItem>
               </>
