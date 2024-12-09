@@ -5,6 +5,7 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 const {
   openSessionValidation,
   closeSessionValidation,
+  reserveSeatValidation,
 } = require("../validators/fan.validator");
 const handleValidationErrors = require("../middleware/validationMiddleware");
 
@@ -30,13 +31,13 @@ router.put(
   fanController.closeSession
 );
 
-// router.post(
-//   "/reserve-seat",
-//   authMiddleware,
-//   roleMiddleware(role),
-//   createStadiumValidation,
-//   handleValidationErrors,
-//   managerController.createStadium
-// );
+router.post(
+  "/reserve-seat",
+  authMiddleware,
+  roleMiddleware(role),
+  reserveSeatValidation,
+  handleValidationErrors,
+  fanController.reserveSeat
+);
 
 module.exports = router;

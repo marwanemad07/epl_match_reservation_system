@@ -16,3 +16,10 @@ exports.closeSessionValidation = [
     .isUUID()
     .withMessage("Invalid session ID"),
 ];
+
+exports.reserveSeatValidation = [
+  body("seatId")
+    .isInt({ min: 1 })
+    .withMessage("Seat ID must be an integer greater than 0"),
+  body("sessionId").trim().isUUID().withMessage("Invalid session ID"),
+];

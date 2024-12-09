@@ -74,14 +74,13 @@ CREATE TABLE `Seat` (
 CREATE TABLE `Reservation` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `status` ENUM('CONFIRMED', 'TEMP_BOOKED') NOT NULL DEFAULT 'TEMP_BOOKED',
-    `reservedAt` DATETIME(3) NOT NULL,
-    `canceledAt` DATETIME(3) NULL,
+    `reservedAt` DATETIME(3) NULL,
     `matchId` INTEGER NOT NULL,
     `seatId` INTEGER NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `sessionId` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `Reservation_matchId_seatId_sessionId_key`(`matchId`, `seatId`, `sessionId`),
+    UNIQUE INDEX `Reservation_matchId_seatId_key`(`matchId`, `seatId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
