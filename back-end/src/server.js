@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const authRouter = require("./routes/auth.routes");
 const adminRouter = require("./routes/admin.routes");
 const managerRouter = require("./routes/manager.routes");
+const fanRouter = require("./routes/fan.routes");
 const publicRouter = require("./routes/public.routes");
 
 const app = express();
@@ -32,6 +33,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 
 app.use("/api/manager", managerRouter);
+
+app.use("/api/fan", fanRouter);
 
 app.use("/api/public", publicRouter);
 
