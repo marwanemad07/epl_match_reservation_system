@@ -40,4 +40,13 @@ router.post(
   fanController.reserveSeat
 );
 
+router.post(
+  "/cancel-seat-reservation",
+  authMiddleware,
+  roleMiddleware(role),
+  reserveSeatValidation,
+  handleValidationErrors,
+  fanController.cancelSeatReservation
+)
+
 module.exports = router;

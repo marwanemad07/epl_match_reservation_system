@@ -44,3 +44,19 @@ exports.reserveSeat = async (req, res) => {
     res.status(statusCode).json({ message: message });
   }
 };
+
+exports.cancelSeatReservation = async (req, res) => {
+  try {
+    const data = req.body;
+    const response = await fanService.cancelSeatReservation({
+      ...data,
+      userId: req.userToken.userId,
+    });
+    const statusCode = response.statusCode || 200;
+    res.status(statusCode).json(response);
+  } catch (err) {
+    const message = development ? err.message : "Internal server error";
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({ message: message });
+  }
+};
