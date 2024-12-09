@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 // Providers
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ToastContainer } from "react-toastify";
+import { Slide, ToastContainer } from "react-toastify";
 
 // Pages
 import {
@@ -40,6 +40,7 @@ const router = createBrowserRouter([
       },
       { path: "profile/:userId", element: <ProfilePage /> },
       { path: "match/:matchId/booking", element: <BookingPage /> },
+      { path: "matches", element: <MatchPage /> },
       { path: "match/:matchId", element: <MatchPage /> },
       { path: "team/:teamId", element: <TeamPage /> },
     ],
@@ -53,7 +54,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <RouterProvider router={router} />
-        <ToastContainer />
+        <ToastContainer autoClose={1250} transition={Slide} />
       </TooltipProvider>
     </QueryClientProvider>
   );
