@@ -11,8 +11,8 @@ import {
   HomeLayout,
   LandingPage,
   RegisterPage,
+  MatchPage,
   ProfilePage,
-  BookingPage,
   ErrorPage,
 } from "./pages";
 
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
         path: "profile",
         element: <ProfilePage />,
       },
-      { path: "match/:matchId/booking", element: <BookingPage /> },
+      { path: "match/:matchId", element: <MatchPage /> },
     ],
     errorElement: <ErrorPage />,
   },

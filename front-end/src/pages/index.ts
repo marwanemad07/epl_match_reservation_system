@@ -3,13 +3,14 @@ import LandingPage from "./LandingPage";
 import ErrorPage from "./ErrorPage";
 import RegisterPage from "./register/RegisterPage";
 import ProfilePage from "./profile/ProfilePage";
-import BookingPage from "./BookingPage";
+import MatchPage from "./MatchPage";
+
 
 export {
   HomeLayout,
   LandingPage,
   RegisterPage,
+  MatchPage,
   ProfilePage,
-  BookingPage,
   ErrorPage,
 };
