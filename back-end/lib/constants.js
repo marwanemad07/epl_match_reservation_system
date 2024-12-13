@@ -1,0 +1,1 @@
+exports.MAX_SESSION_TIME_IN_SECONDS = 7 * 60

@@ -1,4 +1,7 @@
-export interface UserStoreType {
-  username: string | null;
-  setUsername: (newUsername: string | null) => void;
+export type User = {
+  id: string;
+  isVerified: boolean;
+  password: string;
+  role: string;
+  username: string;
 }

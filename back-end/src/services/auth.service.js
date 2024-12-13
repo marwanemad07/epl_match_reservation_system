@@ -63,7 +63,7 @@ exports.loginUser = async (body) => {
     return { statusCode: 401, message: "Invalid credentials" };
   }
   token = exports.generateToken({ userId: user.id, role: user.role });
-  return { statusCode: 200, data: { token } };
+  return { statusCode: 200, data: { token, user } };
 };
 
 exports.generateToken = (user) => {

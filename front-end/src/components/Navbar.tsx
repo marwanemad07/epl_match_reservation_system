@@ -20,11 +20,13 @@ function Navbar() {
   return (
     <section className="w-screen sticky flex justify-between items-center py-4 px-24 border-b shadow-md bg-opacity-60 backdrop-blur-xl">
       <div className="flex items-center gap-10">
-        <div className="flex gap-3 items-center">
-          {/* LOGO */}
-          <Logo className="w-9" />
-          <h3 className="text-3xl font-bold text-blue-800">Tickestria</h3>
-        </div>
+        <Link to="/">
+          <div className="flex gap-3 items-center">
+            {/* LOGO */}
+            <Logo className="w-9" />
+            <h3 className="text-3xl font-bold text-blue-800">Tickestria</h3>
+          </div>
+        </Link>
         {/* <nav className="text-muted-foreground text-md font-semibold">
           <Link
             to="/matches"

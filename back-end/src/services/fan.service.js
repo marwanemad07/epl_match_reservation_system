@@ -1,4 +1,6 @@
 const { Prisma: prisma } = require("../../lib/db");
+const commonService = require("./common.service");
+const { MAX_SESSION_TIME_IN_SECONDS } = require("../../lib/constants");
 const schedule = require("node-schedule");
 const server = require("../server");
 require("dotenv").config();
@@ -34,7 +36,7 @@ exports.openSession = async (data) => {
           message: "User has an active session for another match",
         };
       } else {
-        await clearBookedSeats(activeSession.id);
+        await this.clearBookedSeats(activeSession.id);
       }
     }
 
@@ -53,12 +55,14 @@ exports.openSession = async (data) => {
         return { statusCode: 200, data: existingSession };
       } else {
         // session has expired
-        await clearBookedSeats(existingSession.id);
+        await this.clearBookedSeats(existingSession.id);
       }
     }
 
     // set session end time to end after 7 mins
-    const expiresAt = new Date(new Date().getTime() + 7 * 60 * 1000);
+    const expiresAt = new Date(
+      new Date().getTime() + MAX_SESSION_TIME_IN_SECONDS * 1000
+    );
 
     // create the session
     const session = await prisma.reservationSession.create({
@@ -80,16 +84,20 @@ exports.openSession = async (data) => {
 
     // schedule the session to end after 7 mins
     schedule.scheduleJob(expiresAt, async () => {
-      // check if the session is still active
-      const oldSession = await prisma.reservationSession.findFirst({
-        where: {
-          id: session.id,
-          isActive: true,
-        },
-      });
-
-      if (oldSession) {
-        await clearBookedSeats(oldSession.id);
+      try {
+        // check if the session is still active
+        const oldSession = await prisma.reservationSession.findFirst({
+          where: {
+            id: session.id,
+            isActive: true,
+          },
+        });
+  
+        if (oldSession) {
+          await this.clearBookedSeats(oldSession.id);
+        }
+      } catch (error) {
+        console.log(error)
       }
     });
 
@@ -115,7 +123,7 @@ exports.closeSession = async (sessionId) => {
       return { statusCode: 404, message: "Session not found" };
     }
 
-    await clearBookedSeats(sessionId);
+    await this.clearBookedSeats(sessionId);
 
     return { statusCode: 200, message: "Session closed" };
   } catch (err) {
@@ -149,7 +157,7 @@ exports.reserveSeat = async (data) => {
     }
 
     if (session.expiresAt < new Date()) {
-      await clearBookedSeats(data.sessionId);
+      await this.clearBookedSeats(data.sessionId);
       return { statusCode: 400, message: "Session expired" };
     }
 
@@ -206,6 +214,11 @@ exports.reserveSeat = async (data) => {
               },
             },
           },
+          select: {
+            seat: true,
+            match: true,
+            session: true,
+          },
         });
 
         server.io.emit(session.match.id, {
@@ -213,7 +226,7 @@ exports.reserveSeat = async (data) => {
           data: {
             seatId: data.seatId,
             matchId: session.match.id,
-            leftSeats: await getLeftSeats(session.match.id),
+            seats: await commonService.getMatchSeats(session.match),
           },
         });
 
@@ -260,7 +273,7 @@ exports.cancelSeatReservation = async (data) => {
     }
 
     if (session.expiresAt < new Date()) {
-      await clearBookedSeats(data.sessionId);
+      await this.clearBookedSeats(data.sessionId);
       return { statusCode: 400, message: "Session expired" };
     }
 
@@ -290,6 +303,11 @@ exports.cancelSeatReservation = async (data) => {
           where: {
             id: existingReservation.id,
           },
+          select: {
+            seat: true,
+            match: true,
+            session: true,
+          },
         });
 
         server.io.emit(session.match.id, {
@@ -297,7 +315,7 @@ exports.cancelSeatReservation = async (data) => {
           data: {
             seatId: data.seatId,
             matchId: session.match.id,
-            leftSeats: await getLeftSeats(session.match.id),
+            seats: await commonService.getMatchSeats(session.match),
           },
         });
 
@@ -321,95 +339,264 @@ exports.cancelSeatReservation = async (data) => {
   }
 };
 
-clearBookedSeats = async (sessionId) => {
+exports.completeReservation = async (data) => {
   try {
-    return prisma.$transaction(async () => {
-      // get the match id
-      const session = await prisma.reservationSession.findUnique({
-        where: {
-          id: sessionId,
-        },
-      });
+    // check if session is active
+    const session = await prisma.reservationSession.findFirst({
+      where: {
+        id: data.sessionId,
+        isActive: true,
+      },
+      include: {
+        match: true,
+        user: true,
+      },
+    });
 
-      if (!session) {
-        return { statusCode: 404, message: "Session not found" };
-      }
+    if (!session) {
+      return { statusCode: 404, message: "Session not found" };
+    }
 
-      const matchId = session.matchId;
-      
-      // delete all reservations for the session
-      await prisma.reservation.deleteMany({
-        where: {
-          sessionId: sessionId,
-        },
-      });
+    if (session.user.id !== data.userId) {
+      return { statusCode: 403, message: "Unauthorized" };
+    }
 
-      // set the session to inactive
-      await prisma.reservationSession.update({
-        where: {
-          id: sessionId,
-        },
-        data: {
-          isActive: false,
-        },
-      });
+    if (session.expiresAt < new Date()) {
+      await this.clearBookedSeats(data.sessionId);
+      return { statusCode: 400, message: "Session expired" };
+    }
 
-      if (matchId !== 0) {
-        server.io.emit(matchId, {
-          type: "SESSION_EXPIRED",
-          data: {
-            matchId: matchId,
-            leftSeats: await getLeftSeats(matchId),
+    return prisma.$transaction(
+      async () => {
+        // check if the user has any reservations
+        const reservations = await prisma.reservation.findMany({
+          where: {
+            userId: data.userId,
+            sessionId: data.sessionId,
+          },
+          select: {
+            seat: true,
+            match: true,
+            session: true,
           },
         });
+
+        if (reservations.length === 0) {
+          throw new Error("No reservations found");
+        }
+
+        // update all reservations status for the session and add reservedAt time 
+        await prisma.reservation.updateMany({
+          where: {
+            userId: data.userId,
+            sessionId: data.sessionId,
+          },
+          data: {
+            status: "CONFIRMED",
+            reservedAt: new Date(),
+          },
+        });
+
+        // set the session to inactive
+        await prisma.reservationSession.update({
+          where: {
+            id: data.sessionId,
+          },
+          data: {
+            isActive: false,
+          },
+        });
+
+        server.io.emit(session.match.id, {
+          type: "SESSION_EXPIRED",
+          data: {
+            matchId: session.match.id,
+            sessionId: data.sessionId,
+            seats: await commonService.getMatchSeats(session.match),
+          },
+        });
+
+        return { statusCode: 200, message: "Reservation completed" };
+      },
+      {
+        maxWait: 5000,
+        timeout: 20000,
       }
-      return { statusCode: 200, message: "Session cleared" };
-    });
+    );
   } catch (err) {
     if (process.env._ENV === "dev") {
       throw err;
     }
 
+    if (err.message === "No reservations found") {
+      return { statusCode: 400, message: "No reservations found" };
+    }
+
     return { statusCode: 500, message: "Internal server error" };
   }
-};
+}
 
-getLeftSeats = async (matchId) => {
+exports.clearBookedSeats = async (sessionId) => {
+  const clearSeats = async (sessionId) => {
+    const session = await prisma.reservationSession.findUnique({
+      where: {
+        id: sessionId,
+      },
+      select: {
+        match: true,
+      },
+    });
+
+    if (!session) {
+      return { statusCode: 404, message: "Session not found" };
+    }
+
+    const matchId = session.match.id;
+
+    // delete all reservations for the session
+    await prisma.reservation.deleteMany({
+      where: {
+        sessionId: sessionId,
+      },
+    });
+
+    // set the session to inactive
+    await prisma.reservationSession.update({
+      where: {
+        id: sessionId,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
+    if (matchId !== 0) {
+      server.io.emit(matchId, {
+        type: "SESSION_EXPIRED",
+        data: {
+          matchId: matchId,
+          sessionId: sessionId,
+          seats: await commonService.getMatchSeats(session.match),
+        },
+      });
+    }
+    return { statusCode: 200, message: "Session cleared" };
+  };
+
   try {
-    const match = await prisma.match.findUnique({
+    return prisma.$transaction(async () => clearSeats(sessionId), {
+      maxWait: 20000,
+      timeout: 30000,
+    });
+  } catch (err) {
+    return { statusCode: 500, message: "Internal server error" };
+  }
+};
+
+exports.getReservations = async (userId) => {
+  try {
+    const reservations = await prisma.reservation.findMany({
       where: {
-        id: matchId,
+        userId: userId,
+      },
+      include: {
+        seat: true,
+        match: true,
+        session: true,
       },
     });
 
-    if (!match) {
-      return { statusCode: 404, message: "Match not found" };
-    }
+    // group reservations by sessionId and concat seats together
+    const groupedReservations = reservations.reduce((acc, reservation) => {
+      if (!acc[reservation.sessionId]) {
+        acc[reservation.sessionId] = {
+          session: reservation.session,
+          match: reservation.match,
+          seats: [],
+        };
+      }
 
-    const seats = await prisma.seat.findMany({
-      where: {
-        stadiumId: match.stadiumId,
-      },
-    });
+      acc[reservation.sessionId].seats.push(reservation.seat);
 
-    const reservedSeats = await prisma.reservation.findMany({
-      where: {
-        matchId: matchId,
-      },
-    });
+      return acc;
+    }, {});
 
-    const leftSeats = seats.filter((seat) => {
-      return !reservedSeats.some(
-        (reservedSeat) => reservedSeat.seatId === seat.id
-      );
-    });
+    // convert object to array
+    const groupedReservationsArray = Object.keys(groupedReservations).map(
+      (sessionId) => groupedReservations[sessionId]
+    );
 
-    return { statusCode: 200, data: leftSeats };
+
+    return { statusCode: 200, data: groupedReservationsArray };
   } catch (err) {
     if (process.env._ENV === "dev") {
       throw err;
     }
-
     return { statusCode: 500, message: "Internal server error" };
   }
-};
+}
+
+exports.deleteReservation = async (userId, sessionId) => {
+  try {
+    console.log(sessionId)
+    // check if session is available
+    const session = await prisma.reservationSession.findFirst({
+      where: {
+        id: sessionId,
+      },
+      select: {
+        match: true,
+      }
+    });
+
+    if (!session) {
+      return { statusCode: 404, message: "Session not found" };
+    }
+
+    // check if user has any reservations for the session
+    const reservations = await prisma.reservation.findMany({
+      where: {
+        userId: userId,
+        sessionId: sessionId,
+      },
+      select:{
+        id: true,
+        match: true,
+      }
+    });
+
+    if (reservations.length === 0) {
+      return { statusCode: 404, message: "No reservations found" };
+    }
+
+    // check if match date is after more than 3 days
+    if (new Date(reservations[0].match.matchDate) < new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000)) {
+      return { statusCode: 400, message: "Cannot cancel reservation for match starting in less than 3 days" };
+    }
+
+    // delete all reservations for the session
+    await prisma.reservation.deleteMany({
+      where: {
+        userId: userId,
+        sessionId: sessionId,
+      },
+    });
+
+    server.io.emit(session.match.id, {
+      type: "SEAT_CANCELLED",
+      data: {
+        matchId: session.match.id,
+        seats: await commonService.getMatchSeats(session.match),
+      },
+    });
+
+    return { statusCode: 200, message: "Reservations deleted" };
+  }
+  catch (err) {
+    if (process.env._ENV === "dev") {
+      throw err;
+    }
+    return { statusCode: 500, message: "Internal server error" };
+  }
+}
+

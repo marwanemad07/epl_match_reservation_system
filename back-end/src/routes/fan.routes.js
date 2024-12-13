@@ -6,6 +6,8 @@ const {
   openSessionValidation,
   closeSessionValidation,
   reserveSeatValidation,
+  completeReservationValidation,
+  cancelSeatReservationValidation,
 } = require("../validators/fan.validator");
 const handleValidationErrors = require("../middleware/validationMiddleware");
 
@@ -47,6 +49,29 @@ router.post(
   reserveSeatValidation,
   handleValidationErrors,
   fanController.cancelSeatReservation
+)
+
+router.post(
+  "/complete-reservation",
+  authMiddleware,
+  roleMiddleware(role),
+  completeReservationValidation,
+  handleValidationErrors,
+  fanController.completeReservation
+)
+
+router.get(
+  "/reservations",
+  authMiddleware,
+  roleMiddleware(role),
+  fanController.getReservations
+)
+
+router.delete(
+  "/reservation",
+  authMiddleware,
+  roleMiddleware(role),
+  fanController.deleteReservation
 )
 
 module.exports = router;

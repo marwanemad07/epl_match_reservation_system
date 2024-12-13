@@ -6,6 +6,7 @@ const authRouter = require("./routes/auth.routes");
 const adminRouter = require("./routes/admin.routes");
 const managerRouter = require("./routes/manager.routes");
 const fanRouter = require("./routes/fan.routes");
+const commonRouter = require("./routes/common.routes");
 const publicRouter = require("./routes/public.routes");
 const { Server } = require("socket.io");
 const http = require("http");
@@ -44,6 +45,8 @@ app.use("/api/admin", adminRouter);
 app.use("/api/manager", managerRouter);
 
 app.use("/api/fan", fanRouter);
+
+app.use("/api/common", commonRouter);
 
 app.use("/api/public", publicRouter);
 

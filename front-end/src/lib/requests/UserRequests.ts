@@ -1,6 +1,7 @@
 import { SignupValues } from "@/types/SignupSchema";
 import { customFetch } from "./CustomFetch";
 import { LoginValues } from "@/types/LoginSchema";
+import { User } from "@/types/UserTypes";
 
 /**
  * Make an API call to create a new user. The new user must first be verified by the admin
@@ -23,7 +24,15 @@ export const signupUser = async (userData: SignupValues): Promise<void> => {
  * @param userData - The user data to be logged in
  * @returns a promise with type void
  */
-export const loginUser = async (userData: LoginValues): Promise<void> => {
+export const loginUser = async (
+  userData: LoginValues
+): Promise<{
+  data: {
+    user: User;
+    token: string;
+  };
+  status: number;
+}> => {
   try {
     const response = customFetch.post("api/auth/login", userData);
     return (await response).data;
